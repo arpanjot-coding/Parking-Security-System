@@ -7,22 +7,33 @@ import random
 from tkcalendar import Calendar
 
 
+
+
+
 class Main:
+    # Creating the window
+    master = Tk()
     BackgroundColor = "#A49B96"
     ForegroundColor = "#D3D0CF"
     textColor = "#ffffff"
 
-    def __init__(self):
-        # Creating the window
-        master = Tk()
-        # Getting the size of the screen and removing 100 pixles from it to make a bit smaller
-        master.geometry("{1}x{0}+2+5".format(master.winfo_screenheight() - 100, master.winfo_screenwidth() - 100))
-        master.resizable(0, 0)
-        master.configure(bg=self.BackgroundColor)
-        winHeight = master.winfo_screenheight()
-        winWidth = master.winfo_screenwidth()
+    # Methods to perform task when window is destroyed
+    def killWindow(self,event):
+        self.master.destroy()  # destroying the window
 
-        master.mainloop()
+    def __init__(self):
+
+        # Getting the windows sizes
+        winHeight = self.master.winfo_screenheight()
+        winWidth = self.master.winfo_screenwidth()
+        # Getting the size of the screen and removing 100 pixels from it to make a bit smaller
+        self.master.geometry("{1}x{0}+2+5".format(winHeight - 100, winWidth - 100))
+        self.master.resizable(0, 0)
+        self.master.configure(bg=self.BackgroundColor)
+        # destroy the window if "Escape key is pressed"
+        self.master.bind("<Escape>", self.killWindow)
+
+        self.master.mainloop()
 
 
 # Calling the Main class that contain the GUI and DBS commands
