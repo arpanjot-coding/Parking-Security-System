@@ -122,8 +122,26 @@ class Main:
         self.textEntryTwo.place_forget()
         self.textEntryOne.place_forget()
 
+    def placeSignupPage(self):
+        self.labelOne.config(text="Signup")
+        self.labelTwo.config(text="USERNAME")
+        self.labelThree.config(text="PASSWORD")
+        self.labelFour.config(text="FIRST NAME")
+        self.labelFive.config(text="LAST NAME")
+        self.buttonOne.config(text="Save Info", )#Make a method to add the profle
 
-
+        # Placing the Labels,Buttons,Text boxes of Signup page
+        self.labelInterfaceOne.place(relx=0.1, rely=0.1)
+        self.labelOne.place(relx=0.63, rely=0.12, relheight=0.1, relwidth=0.2)
+        self.labelFour.place(relx=0.63, rely=0.29, relheight=0.03, relwidth=0.2)
+        self.labelFive.place(relx=0.63, rely=0.4, relheight=0.03, relwidth=0.2)
+        self.labelTwo.place(relx=0.63, rely=0.51, relheight=0.03, relwidth=0.2)
+        self.labelThree.place(relx=0.63, rely=0.62, relheight=0.03, relwidth=0.2)
+        self.buttonOne.place(relx=0.8, rely=0.8, relheight=0.05, relwidth=0.08)
+        self.textEntryOne.place(relx=0.58, rely=0.338, relheight=0.04, relwidth=0.3)
+        self.textEntryTwo.place(relx=0.58, rely=0.448, relheight=0.04, relwidth=0.3)
+        self.textEntryThree.place(relx=0.58, rely=0.558, relheight=0.04, relwidth=0.3)
+        self.textEntryFour.place(relx=0.58, rely=0.668, relheight=0.04, relwidth=0.3)
 
 
 # Calling the Main class that contain the GUI and DBS commands
