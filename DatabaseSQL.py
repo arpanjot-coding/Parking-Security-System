@@ -1,6 +1,7 @@
 from tkinter import *
 import psycopg2
 import json
+import random
 from tkinter import messagebox
 
 
@@ -26,37 +27,16 @@ class main:
         self.winHeight = winHeight
         self.winWidth = winWidth
 
-        # Opening the DB credential file
-        with open("files/configSettings.json", 'r') as f:  # Opening the settings file
-            configData = json.load(f)
-            configJsonData = configData
 
-        try:
-            # opening the database
-            conn = psycopg2.connect(database=configJsonData["database"], user=configJsonData["user"],
-                                    password=configJsonData["password"], host=configJsonData["host"],
-                                    port=configJsonData["port"])
-            self.cur = conn.cursor()
-        except:
-            messagebox.showinfo("showinfo",
-                                "Database connection failed!\nCheck \"IP,Database name, User, password\" From settings")
-
-        global username
-        username = ""
-
-        try:
-            self.createDB()
-        except:
-            pass
 
 
     class Table:
         def __init__(self, root, lst):
-            total_rows = len(lst)
-            total_columns = len(lst[0])
+            totalRows = len(lst)
+            totalColumns = len(lst[0])
             # code for creating table
-            for i in range(total_rows):
-                for j in range(total_columns):
+            for i in range(totalRows):
+                for j in range(totalColumns):
                     if i == 0:
                         self.e = Entry(root, width=20, bg=self.backgroundColor, fg=self.textColor, font=self.simpleTextFont2,
                                        justify=CENTER)
@@ -85,3 +65,44 @@ class main:
                   CONSTRAINT FK_PERSON FOREIGN KEY(USERNAME) REFERENCES PERSON(USERNAME)
                   );
                   ''')
+
+    def addBookings(self, entryOne, entryTwo, entryThree):
+        if entryOne.get("1.0", "end-1c") != "" and entryTwo.get("1.0", "end-1c") != "" and entryThree.get("1.0", "end-1c") != "":
+            try:
+                self.cur.execute("INSERT INTO BOOKING (BID,NUMBER,CHECKIN,CHECKOUT,USERNAME) \
+                      VALUES (" + str(random.randint(1, 1000)) + ",'" + entryOne.get("1.0", "end-1c") + "', '" + entryTwo.get("1.0",
+                                                                                                                  "end-1c") + "' , '" + entryThree.get(
+                    "1.0", "end-1c") + "', '" + username + "' );")
+                messagebox.showinfo("showinfo", "Booking Complete!")
+                # Removing the text from Text widgets
+                entryOne.delete("1.0", "end")
+                entryTwo.delete("1.0", "end")
+                entryThree.delete("1.0", "end")
+            except:
+                # showing error because of any possible error and Booking failed.
+                messagebox.showinfo("showinfo", "Booking failed!")
+        else:
+            # showing error message in case any field is empty
+            messagebox.showinfo("showinfo", "Fields are empty! All fields must be filled.")
+        return
+
+    def addProfile(self, entryOne, entryTwo, entryThree, entryFour):
+        if entryOne.get("1.0", "end-1c") != "" and entryTwo.get("1.0", "end-1c") != "" and entryThree.get("1.0", "end-1c") != "" and entryFour.get(
+                "1.0", "end-1c") != "":
+            # Query for getting if username exists
+            self.cur.execute("SELECT username,pass FROM PERSON WHERE (USERNAME ='" + str(entryThree.get("1.0", "end-1c")) + "');")
+            if len(self.cur.fetchall()) == 0:
+                # Registering the profile
+                self.cur.execute("INSERT INTO PERSON (FNAME,LNAME,PASS,USERNAME) \
+                      VALUES ('" + entryOne.get("1.0", "end-1c") + "', '" + entryTwo.get("1.0", "end-1c") + "' , '" + entryFour.get("1.0",
+                                                                                                                 "end-1c") + "', '" + entryThree.get(
+                    "1.0", "end-1c") + "' );")
+                # Moving to the Login page if registration is successful
+                removeSignupPage()
+                placeLoginPage()
+            else:
+                # showing error message if primary key "Username already exists in the person table"
+                messagebox.showinfo("showinfo", "Username already exists!")
+        else:
+            # showing error message in case any field is empty
+            messagebox.showinfo("showinfo", "Fields are empty! All fields must be filled.")

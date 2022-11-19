@@ -69,6 +69,19 @@ class Main:
     buttonSeven = Button(master, bg=backgroundColor, fg=textColor, text="Select", borderwidth=0,
                          font=buttonFont, )
 
+    cur = None
+
+    global username
+    username = ""
+
+
+
+
+
+
+
+
+
     def __init__(self):
         # Getting the size of the screen and removing 100 pixels from it to make a bit smaller
         self.master.geometry("{1}x{0}+2+5".format(self.winHeight - 100, self.winWidth - 100))
@@ -79,6 +92,26 @@ class Main:
 
         self.placeLoginPage()
 
+        # Opening the DB credential file
+        with open("files/configSettings.json", 'r') as f:  # Opening the settings file
+            configData = json.load(f)
+            configJsonData = configData
+
+        try:
+            # opening the database
+            conn = psycopg2.connect(database=configJsonData["database"], user=configJsonData["user"],
+                                    password=configJsonData["password"], host=configJsonData["host"],
+                                    port=configJsonData["port"])
+            self.cur = conn.cursor()
+        except:
+            messagebox.showinfo("showinfo",
+                                "Database connection failed!\nCheck \"IP,Database name, User, password\" From settings")
+
+
+        try:
+            self.createDB()
+        except:
+            pass
 
         self.master.mainloop()
 
@@ -128,7 +161,7 @@ class Main:
         self.labelThree.config(text="PASSWORD")
         self.labelFour.config(text="FIRST NAME")
         self.labelFive.config(text="LAST NAME")
-        self.buttonOne.config(text="Save Info", )#Make a method to add the profle
+        self.buttonOne.config(text="Save Info",command=lambda :[self.addProfile(self.textEntryOne,self.textEntryTwo,self.textEntryThree,self.textEntryFour)])
 
         # Placing the Labels,Buttons,Text boxes of Signup page
         self.labelInterfaceOne.place(relx=0.1, rely=0.1)
@@ -142,6 +175,84 @@ class Main:
         self.textEntryTwo.place(relx=0.58, rely=0.448, relheight=0.04, relwidth=0.3)
         self.textEntryThree.place(relx=0.58, rely=0.558, relheight=0.04, relwidth=0.3)
         self.textEntryFour.place(relx=0.58, rely=0.668, relheight=0.04, relwidth=0.3)
+
+
+    class Table:
+        def __init__(self, root, lst):
+            totalRows = len(lst)
+            totalColumns = len(lst[0])
+            # code for creating table
+            for i in range(totalRows):
+                for j in range(totalColumns):
+                    if i == 0:
+                        self.e = Entry(root, width=20, bg=self.backgroundColor, fg=self.textColor, font=self.simpleTextFont2,
+                                       justify=CENTER)
+                        self.e.grid(row=i, column=j)
+                    else:
+                        self.e = Entry(root, width=20, fg=self.backgroundColor, bg=self.textColor, font=self.simpleTextFont2,
+                                       justify=CENTER)
+                        self.e.grid(row=i, column=j)
+                    self.e.insert(END, lst[i][j])
+
+    def createDB(self):
+        # Creating the tables in database
+        self.cur.execute('''CREATE TABLE PERSON
+              (FNAME           VARCHAR(30)    NOT NULL,
+              LNAME           VARCHAR(30)    NOT NULL,
+              PASS            VARCHAR(30)     NOT NULL,
+              USERNAME        VARCHAR(30)  PRIMARY KEY   NOT NULL
+              );
+              ''')
+        self.cur.execute('''CREATE TABLE BOOKING
+                  (BID INT PRIMARY KEY  NOT NULL,
+                  NUMBER INT NOT NULL,
+                  CHECKIN VARCHAR(30) NOT NULL,
+                  CHECKOUT VARCHAR(30) NOT NULL,
+                  USERNAME VARCHAR(30) NOT NULL,
+                  CONSTRAINT FK_PERSON FOREIGN KEY(USERNAME) REFERENCES PERSON(USERNAME)
+                  );
+                  ''')
+
+    def addProfile(self, entryOne, entryTwo, entryThree, entryFour):
+        if entryOne.get("1.0", "end-1c") != "" and entryTwo.get("1.0", "end-1c") != "" and entryThree.get("1.0", "end-1c") != "" and entryFour.get(
+                "1.0", "end-1c") != "":
+            # Query for getting if username exists
+            self.cur.execute("SELECT username,pass FROM PERSON WHERE (USERNAME ='" + str(entryThree.get("1.0", "end-1c")) + "');")
+            if len(self.cur.fetchall()) == 0:
+                # Registering the profile
+                self.cur.execute("INSERT INTO PERSON (FNAME,LNAME,PASS,USERNAME) \
+                      VALUES ('" + entryOne.get("1.0", "end-1c") + "', '" + entryTwo.get("1.0", "end-1c") + "' , '" + entryFour.get("1.0",
+                                                                                                                 "end-1c") + "', '" + entryThree.get(
+                    "1.0", "end-1c") + "' );")
+                # Moving to the Login page if registration is successful
+                self.removeSignupPage()
+                self.placeLoginPage()
+            else:
+                # showing error message if primary key "Username already exists in the person table"
+                messagebox.showinfo("showinfo", "Username already exists!")
+        else:
+            # showing error message in case any field is empty
+            messagebox.showinfo("showinfo", "Fields are empty! All fields must be filled.")
+
+    def verifyLogin(self, entryOne, entryTwo):
+        global username
+        if entryOne.get("1.0", "end-1c") != "" and entryTwo.get() != "":
+            username = str(entryOne.get("1.0", "end-1c"))
+            # Query to check if user exist
+            self.cur.execute("SELECT username,pass FROM PERSON WHERE (USERNAME ='" + str(
+                entryOne.get("1.0", "end-1c")) + "' and PASS= '" + str(entryTwo.get()) + "');")
+            if len(self.cur.fetchall()) > 0:
+                self.removeLoginPage()
+                self.placeBookingPage()
+            else:
+                # showing error message if user not found
+                messagebox.showinfo("showinfo", "No User Found! New user?")
+        else:
+            # showing error message in case any field is empty
+            messagebox.showinfo("showinfo", "Fields are Empty! Password and username required.")
+
+
+
 
 
 # Calling the Main class that contain the GUI and DBS commands
