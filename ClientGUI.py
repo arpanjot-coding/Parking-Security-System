@@ -6,6 +6,7 @@ from tkinter import messagebox
 import random
 from tkcalendar import Calendar
 
+# TODO add detailed comments
 
 
 class Main:
