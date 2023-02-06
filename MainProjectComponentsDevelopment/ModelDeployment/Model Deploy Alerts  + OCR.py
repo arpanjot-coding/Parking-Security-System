@@ -10,11 +10,11 @@ try:
 except:
     pass
 
-model1 = torch.hub.load('ultralytics/yolov5', 'custom', path='D1-V1/train/exp/weights/best.pt', force_reload=True)
-model2 = torch.hub.load('ultralytics/yolov5', 'custom', path='D2-V1/train/exp/weights/best.pt', force_reload=True)
-model3 = torch.hub.load('ultralytics/yolov5', 'custom', path='Tool-V1/train/exp/weights/best.pt', force_reload=True)
+model1 = torch.hub.load('ultralytics/yolov5', 'custom', path='Tools Resources/Models/D1/best.pt', force_reload=True)
+model2 = torch.hub.load('ultralytics/yolov5', 'custom', path='Tools Resources/Models/D2/best.pt', force_reload=True)
+model3 = torch.hub.load('ultralytics/yolov5', 'custom', path='Tools Resources/Models/Tools/best.pt', force_reload=True)
 
-cap = cv2.VideoCapture('Person.mp4')
+cap = cv2.VideoCapture('Tools Resources/Files/Videos/OreToolsFPS0.5.mp4')
 
 def image_resize(image, width = None, height = None, inter = cv2.INTER_AREA):
     dim = None
