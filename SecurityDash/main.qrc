@@ -1,0 +1,11 @@
+<RCC>
+  <qresource prefix="Images">
+    <file>Images/pexels-felix-mittermeier-956999.jpg</file>
+    <file>Images/pexels-gradienta-7130536.jpg</file>
+  </qresource>
+  <qresource prefix="newPrefix"/>
+  <qresource prefix="newPrefix">
+    <file>Images/pexels-felix-mittermeier-956999.jpg</file>
+    <file>Images/pexels-gradienta-7130536.jpg</file>
+  </qresource>
+</RCC>
