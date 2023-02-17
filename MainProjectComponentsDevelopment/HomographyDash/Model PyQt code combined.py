@@ -44,13 +44,12 @@ class Snake(QWidget):
         # self.model2 = torch.hub.load('ultralytics/yolov5', 'custom', path='Model/D2/best.pt', force_reload=True)
         # self.model3 = torch.hub.load('ultralytics/yolov5', 'custom', path='Model/Tools/best.pt', force_reload=True)
         # This is how to load the model dependencies form local git
-        self.model1 = torch.hub.load('Model/yolov5', 'custom', path='Model/D1/best.pt', source='local')
-        self.model2 = torch.hub.load('Model/yolov5', 'custom', path='Model/D2/best.pt', source='local')
-        self.model3 = torch.hub.load('Model/yolov5', 'custom', path='Model/Tools/best.pt', source='local')
+        self.model1 = torch.hub.load('C:/Users/sarpa/PycharmProjects/FYP-Arpanjot_Singh/TestingResources/yolov5', 'custom', path='C:/Users/sarpa/PycharmProjects/FYP-Arpanjot_Singh/TestingResources/Models/D1/best.pt', source='local')
+        self.model2 = torch.hub.load('C:/Users/sarpa/PycharmProjects/FYP-Arpanjot_Singh/TestingResources/yolov5', 'custom', path='C:/Users/sarpa/PycharmProjects/FYP-Arpanjot_Singh/TestingResources/Models/D2/best.pt', source='local')
+        self.model3 = torch.hub.load('C:/Users/sarpa/PycharmProjects/FYP-Arpanjot_Singh/TestingResources/yolov5', 'custom', path='C:/Users/sarpa/PycharmProjects/FYP-Arpanjot_Singh/TestingResources/Models/Tools/best.pt', source='local')
 
 
-
-        self.cap = cv2.VideoCapture('Files/N1.mp4')
+        self.cap = cv2.VideoCapture('C:/Users/sarpa/PycharmProjects/FYP-Arpanjot_Singh/TestingResources/Files/Videos/N2.mp4')
         self.initUI()
 
     def initUI(self):
@@ -124,11 +123,13 @@ class Snake(QWidget):
         # for car
         qp.setPen(QtCore.Qt.NoPen)
         qp.setBrush(QtGui.QColor(0, 0, 0, 255))
-        qp.drawRect(self.CP1x, self.CP2y+150, 200, -200)
+        #qp.drawRect(self.CP1x, self.CP2y+150, 200, -200)
+        qp.drawRect(self.CP1x, self.CP2y+60, 200, -200)
 
         # for person
         qp.setBrush(QtGui.QColor(220,20,60, 255))
-        qp.drawRect((self.PP1x+self.PP2x)/2, self.PP2y,20, 20)
+        #qp.drawRect(int((self.PP1x+self.PP2x)/2), self.PP2y,20, 20)
+        qp.drawRect( self.PP1x+20, self.PP2y, 20, 20)
 
     # Default method name
     def timerEvent(self, event):

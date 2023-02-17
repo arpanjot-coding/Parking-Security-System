@@ -2,7 +2,6 @@ import torch
 import numpy as np
 import cv2.version
 import time
-import easyocr
 import os
 
 try:
@@ -10,11 +9,18 @@ try:
 except:
     pass
 
-model1 = torch.hub.load('ultralytics/yolov5', 'custom', path='Tools Resources/Models/D1/best.pt', force_reload=True)
-model2 = torch.hub.load('ultralytics/yolov5', 'custom', path='Tools Resources/Models/D2/best.pt', force_reload=True)
-model3 = torch.hub.load('ultralytics/yolov5', 'custom', path='Tools Resources/Models/Tools/best.pt', force_reload=True)
+# Load the three models
+model1 = torch.hub.load('C:/Users/sarpa/OneDrive/Desktop/yolov5', 'custom',
+                             path='C:/Users/sarpa/PycharmProjects/FYP-Arpanjot_Singh/TestingResources/Models/D1/best.pt',
+                             source='local')
+model2 = torch.hub.load('C:/Users/sarpa/OneDrive/Desktop/yolov5', 'custom',
+                             path='C:/Users/sarpa/PycharmProjects/FYP-Arpanjot_Singh/TestingResources/Models/D2/best.pt',
+                             source='local')
+model3 = torch.hub.load('C:/Users/sarpa/OneDrive/Desktop/yolov5', 'custom',
+                             path='C:/Users/sarpa/PycharmProjects/FYP-Arpanjot_Singh/TestingResources/Models/Tools/best.pt',
+                             source='local')
 
-cap = cv2.VideoCapture('Tools Resources/Files/Videos/OreToolsFPS0.5.mp4')
+cap = cv2.VideoCapture('C:/Users/sarpa/PycharmProjects/FYP-Arpanjot_Singh/TestingResources/Files/Videos/20230215_132444.mp4')
 
 def image_resize(image, width = None, height = None, inter = cv2.INTER_AREA):
     dim = None
@@ -57,15 +63,6 @@ def do_overlap(O1 , O2):
 
     return True
 
-def getNumberPlate(frame,data):
-    cv2.imwrite("test/n.jpg",frame)
-    reader = easyocr.Reader(['en'])
-    output = reader.readtext("test/n.jpg")
-
-    num = ""
-    for i in output:
-        num+=i[1]
-    return num
 
 def verifyDate(date):
     t = time.localtime()
@@ -144,7 +141,7 @@ while cap.isOpened():
 
         keys = RDict.keys()
 
-        if 'CAR' in keys and 'PERSON' in keys and CarDoorOpen and not verifyDate("4/2/2023"):
+        if 'CAR' in keys and 'PERSON' in keys and CarDoorOpen and not verifyDate("10/2/2023"):
             if do_overlap(RDict['CAR'],RDict['PERSON']):
                 cv2.putText(img, "MANUAL ROBBERY", (25, 140), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 3, cv2.LINE_4)
 
@@ -152,9 +149,6 @@ while cap.isOpened():
             cv2.putText(img, "POTENTIAL ROBBERY", (25, 230), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 3, cv2.LINE_4)
 
         cv2.imshow('YOLO',image_resize(img,width=1000))
-
-        if 'PLATE' in keys:
-            getNumberPlate(frame,RDict['PLATE'])
 
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break

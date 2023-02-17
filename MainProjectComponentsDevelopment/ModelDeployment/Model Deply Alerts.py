@@ -9,11 +9,18 @@ import pandas
 import time
 from ultralytics import YOLO
 
-model1 = torch.hub.load('ultralytics/yolov5', 'custom', path='/TestingResources/Models/D1/best.pt', force_reload=True)
-model2 = torch.hub.load('ultralytics/yolov5', 'custom', path='/TestingResources/Models/D2/best.pt', force_reload=True)
-model3 = torch.hub.load('ultralytics/yolov5', 'custom', path='/TestingResources/Models/Tools/best.pt', force_reload=True)
+# Load the three models
+model1 = torch.hub.load('C:/Users/sarpa/OneDrive/Desktop/yolov5', 'custom',
+                             path='C:/Users/sarpa/PycharmProjects/FYP-Arpanjot_Singh/TestingResources/Models/D1/best.pt',
+                             source='local')
+model2 = torch.hub.load('C:/Users/sarpa/OneDrive/Desktop/yolov5', 'custom',
+                             path='C:/Users/sarpa/PycharmProjects/FYP-Arpanjot_Singh/TestingResources/Models/D2/best.pt',
+                             source='local')
+model3 = torch.hub.load('C:/Users/sarpa/OneDrive/Desktop/yolov5', 'custom',
+                             path='C:/Users/sarpa/PycharmProjects/FYP-Arpanjot_Singh/TestingResources/Models/Tools/best.pt',
+                             source='local')
 
-cap = cv2.VideoCapture('C:/Users/sarpa/PycharmProjects/FYP-Arpanjot_Singh/TestingResources/Files\Videos/OreToolsFPS0.5.mp4')
+cap = cv2.VideoCapture('C:/Users/sarpa/PycharmProjects/FYP-Arpanjot_Singh/TestingResources/Files\Videos/20230215_133233.mp4')
 
 
 def image_resize(image, width = None, height = None, inter = cv2.INTER_AREA):
