@@ -2,8 +2,11 @@ import os
 import cv2
 import numpy as np
 import torch
+import json
 import time
 import psutil
+import pandas as pd
+
 
 model1 = torch.hub.load('C:/Users/sarpa/OneDrive/Desktop/yolov5', 'custom',
                         path='C:/Users/sarpa/OneDrive/Desktop/Project/TestingResources/Models/D1/best.pt',
@@ -19,6 +22,9 @@ model3 = torch.hub.load('C:/Users/sarpa/OneDrive/Desktop/yolov5', 'custom',
 
 # Set the path to the folder containing the images
 img_folder = 'C:/Users/sarpa/Downloads/Leb/images/'
+
+# Create an empty list to store the output data
+output_data = []
 
 # Loop over all images in the folder
 for filename in os.listdir(img_folder):
@@ -37,11 +43,8 @@ for filename in os.listdir(img_folder):
         result1 = dat1.values
         img = np.squeeze(results1.render())
         end_time = time.time()
-        print(f"Model1 prediction time for {filename}: {end_time - start_time:.3f} seconds")
-
-        # Get the CPU usage after model1's prediction
+        prediction_time1 = end_time - start_time
         cpu_percent_model1 = psutil.cpu_percent() - cpu_percent_start
-        print(f"CPU usage for model1: {cpu_percent_model1:.2f}%")
 
         # Make predictions with model2
         start_time = time.time()
@@ -50,11 +53,8 @@ for filename in os.listdir(img_folder):
         result2 = dat2.values
         img = np.squeeze(results2.render())
         end_time = time.time()
-        print(f"Model2 prediction time for {filename}: {end_time - start_time:.3f} seconds")
-
-        # Get the CPU usage after model2's prediction
+        prediction_time2 = end_time - start_time
         cpu_percent_model2 = psutil.cpu_percent() - cpu_percent_model1
-        print(f"CPU usage for model2: {cpu_percent_model2:.2f}%")
 
         # Make predictions with model3
         start_time = time.time()
@@ -63,8 +63,17 @@ for filename in os.listdir(img_folder):
         result3 = dat3.values
         img = np.squeeze(results3.render())
         end_time = time.time()
-        print(f"Model3 prediction time for {filename}: {end_time - start_time:.3f} seconds")
-
-        # Get the CPU usage after model3's prediction
+        prediction_time3 = end_time - start_time
         cpu_percent_model3 = psutil.cpu_percent() - cpu_percent_model2
-        print(f"CPU usage for model3: {cpu_percent_model3:.2f}%")
+
+        # Append the output data to the list
+        output_data.append([filename, result1, result2, result3, prediction_time1, prediction_time2, prediction_time3,
+                            cpu_percent_model1, cpu_percent_model2, cpu_percent_model3])
+
+# Create a DataFrame to store the output data
+columns = ['Filename', 'Model1 Output', 'Model2 Output', 'Model3 Output', 'Model1 Prediction Time', 'Model2 Prediction Time', 'Model3 Prediction Time', 'Model1 CPU Usage', 'Model2 CPU Usage', 'Model3 CPU Usage']
+df = pd.DataFrame(output_data, columns=columns)
+
+# Save the DataFrame to a CSV file
+df.to_csv('output_data.csv', index=False)
+

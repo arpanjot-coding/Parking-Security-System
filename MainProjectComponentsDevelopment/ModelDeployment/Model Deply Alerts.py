@@ -20,7 +20,7 @@ model3 = torch.hub.load('C:/Users/sarpa/OneDrive/Desktop/yolov5', 'custom',
                              path='C:/Users/sarpa/PycharmProjects/FYP-Arpanjot_Singh/TestingResources/Models/Tools/best.pt',
                              source='local')
 
-cap = cv2.VideoCapture('C:/Users/sarpa/PycharmProjects/FYP-Arpanjot_Singh/TestingResources/Files\Videos/20230215_133233.mp4')
+cap = cv2.VideoCapture('C:/Users/sarpa/PycharmProjects/FYP-Arpanjot_Singh/TestingResources/Files\Videos/20230215_132444.mp4')
 
 
 def image_resize(image, width = None, height = None, inter = cv2.INTER_AREA):

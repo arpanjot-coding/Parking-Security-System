@@ -22,6 +22,9 @@ with open(labels_file, 'r') as f:
 # Create a dictionary to map the image filename to its ID
 id_dict = {img_info['file_name']: img_info['id'] for img_info in labels['images']}
 
+# Create a dictionary to map the category IDs to their names
+id2name = {category['id']: category['name'] for category in labels['categories']}
+
 # Loop over all images in the folder
 for filename in os.listdir(img_folder):
     if filename.lower().endswith('.png'):
@@ -29,20 +32,27 @@ for filename in os.listdir(img_folder):
         img_path = os.path.join(img_folder, filename)
         img = cv2.imread(img_path)
 
-        # Print the shape of the loaded image
-        #print('Loaded image:', img_path, 'Shape:', img.shape)
-
         # Make predictions with model1
         results1 = model1(img)
         dat1 = results1.pandas().xyxy[0]
         result1 = dat1.values
         img = np.squeeze(results1.render())
 
-        # Calculate the distance between the predicted bounding box points and the COCO labels bounding box points
+        # Get the image ID from the filename
         image_id = id_dict[filename]
+
+        # Loop over all annotations for this image
         for annotation in labels['annotations']:
+            # If this annotation is for the current image
             if annotation['image_id'] == image_id:
-                label_bbox = np.array(annotation['bbox'])  # [xmin, ymin, width, height]
+                # Get the category ID for this annotation
+                category_id = annotation['category_id']
+                # Map the category ID to its name
+                category_name = id2name[category_id]
+                # Get the bounding box coordinates
+                bbox = annotation['bbox']
+                # Calculate the distance between the predicted bounding box points and the COCO labels bounding box points
+                label_bbox = np.array(bbox)  # [xmin, ymin, width, height]
                 label_points = np.array(
                     [label_bbox[0], label_bbox[1], label_bbox[0] + label_bbox[2], label_bbox[1] + label_bbox[3]])
                 label_center = np.array(
@@ -51,6 +61,4 @@ for filename in os.listdir(img_folder):
                 pred_centers = (pred_points[:, :2] + pred_points[:, 2:]) / 2
                 distances = np.sqrt(np.sum((pred_centers - label_center) ** 2, axis=1))
                 print('Distances between predicted bounding box points and COCO labels bounding box points:', distances)
-
-# Close the window
-cv2.destroyAllWindows()
+                print('Category name:', category_name)
