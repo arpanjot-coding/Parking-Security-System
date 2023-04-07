@@ -3,25 +3,37 @@ from Messages import ErrorWidget
 from PyQt5.QtCore import *
 from CameraFeed import CameraFeed
 from Simulation import MainSimulation
-
+from HistoryWindow import AnotherWindow
+from PyQt5 import QtWidgets
+import sys
 
 class MyTableWidget(QWidget):
 
-    def __init__(self, m1, m2, m3, userData):
+    def __init__(self,widget, m1, m2, m3, userData):
         super(QWidget, self).__init__()
         self.layout = QVBoxLayout(self)
+        self.Blayout = QHBoxLayout(self)
         self.userData = userData
+        self.widget = widget
         # Initialize tab screen
         self.tabs = QTabWidget()
+        self.setStyleSheet("background-color: grey;")
         # self.addTAB()
 
         tabBtn = QPushButton('ADD NEW TAB')
         tabBtn.clicked.connect(self.addTAB)
 
+        Notif = QPushButton("History")
+        Notif.clicked.connect(self.showHistoryWindow)
+
         self.tabs.resize(1100, 700)
         self.ew = ErrorWidget()
+
         # Add tabs to widget
-        self.layout.addWidget(tabBtn)
+        self.Blayout.addWidget(tabBtn)
+        self.Blayout.addWidget(Notif)
+
+        self.layout.addLayout(self.Blayout)
         self.layout.addWidget(self.ew)
         self.layout.addWidget(self.tabs)
         self.setLayout(self.layout)
@@ -47,8 +59,18 @@ class MyTableWidget(QWidget):
             self.layout.addWidget(self.tabs)
             self.setLayout(self.layout)
 
+    def showHistoryWindow(self):
+        widget = QtWidgets.QStackedWidget()
+        w = AnotherWindow()
+        widget.addWidget(w)
+
+        widget.setFixedHeight(700)
+        widget.setFixedWidth(1200)
+        self.setModal(True)
+        widget.show()
+
+
     @pyqtSlot()
     def on_click(self):
-        print("\n")
         for currentQTableWidgetItem in self.tableWidget.selectedItems():
             print(currentQTableWidgetItem.row(), currentQTableWidgetItem.column(), currentQTableWidgetItem.text())

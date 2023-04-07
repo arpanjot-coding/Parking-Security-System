@@ -10,16 +10,6 @@ import numpy as np
 import time
 
 class MainSimulation(QWidget):
-    score = 0
-    CP1x = 15
-    CP1y = 15
-    CP2x = 15
-    CP2y = 15
-    PP1x = 15
-    PP1y = 15
-    PP2x = 15
-    PP2y = 15
-
     def __init__(self, m1, m2, m3, msg, name, d):
         super(MainSimulation, self).__init__()
         self.RDict = {}
@@ -29,6 +19,7 @@ class MainSimulation(QWidget):
             os.mkdir('test')
         except:
             pass
+
         self.userData = d
         self.model1 = m1
         self.model2 = m2
@@ -82,7 +73,6 @@ class MainSimulation(QWidget):
     # Not default method.
     def update(self):
         if self.videoSet or True:
-            # self.simulate()
             if 'CAR' in self.RDict.keys() and 'PERSON' in self.RDict.keys():
                 self.CP1x = int(550 * (self.RDict['CAR']['p1'].x / 4560))
                 self.CP1y = int(400 * (self.RDict['CAR']['p1'].y / 2564))

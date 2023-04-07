@@ -42,8 +42,8 @@ while page:
 # STARTING APPLICATION
 
 app = QApplication(sys.argv)
-welcome = MyTableWidget(model1, model2, model3, UserData)
 widget = QtWidgets.QStackedWidget()
+welcome = MyTableWidget(widget,model1, model2, model3, UserData)
 widget.addWidget(welcome)
 
 widget.setFixedHeight(700)
