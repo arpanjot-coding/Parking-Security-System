@@ -245,6 +245,7 @@ class MainSimulation(QWidget):
             self.RDict = {}  # used to collect the information about the frame in dictionary.
             i = 0
             CarDoorOpen = False
+            WarningFrame = False
             numberPlate = ""
             # count the number of cars available or person etc...
             carCount = 1
@@ -274,6 +275,7 @@ class MainSimulation(QWidget):
                         # writing on frame that the car door is open
                         # cv2.putText(img, "CAR DOOR OPEN", (25, 95), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 3, cv2.LINE_4)
                         self.MsgSent = True
+                        WarningFrame = True
                         msg.addMessage("Tab " + self.name + " : CAR DOOR OPEN", "red")
 
                 elif 'Car door close' == obj[-1] and 'CAR' not in self.RDict.keys():
@@ -303,6 +305,7 @@ class MainSimulation(QWidget):
                         # writing on frame that the car door is open
                         CarDoorOpen = True
                         self.MsgSent = True
+                        WarningFrame = True
                         msg.addMessage(f"Tab {self.name} : CAR DOOR OPEN", "red")
 
                 elif 'number plate' == obj[-1]:
@@ -345,6 +348,7 @@ class MainSimulation(QWidget):
                                                                                                      self.RDict['CAR']):
                         # if intersecting then saying 'someone is trying to breakin"
                         self.MsgSent = True
+                        WarningFrame = True
                         msg.addMessage("Tab " + self.name + " : SOMEONE IS BREAKING IN THE CAR", "red")
 
             keys = self.RDict.keys()
@@ -354,11 +358,13 @@ class MainSimulation(QWidget):
                 # if car and person is overlaping then saying its 'manual robbery'
                 if self.do_overlap(self.RDict['CAR'], self.RDict['PERSON']):
                     self.MsgSent = True
+                    WarningFrame = True
                     msg.addMessage("Tab " + self.name + " : MANUAL ROBBERY", "red")
 
             # if tool and person is intersecting then saying 'potential robbery'
             if 'PERSON' in keys and 'TOOL' in keys and self.do_overlap(self.RDict['TOOL'], self.RDict['PERSON']):
                 self.MsgSent = True
+                WarningFrame = True
                 msg.addMessage("Tab " + self.name + " : POTENTIAL ROBBERY", "blue")
 
             # displaying the frame
@@ -394,7 +400,7 @@ class MainSimulation(QWidget):
                         break
 
             # self.msg.resetMessages()
-            return img
+            return img,WarningFrame
 
     def __del__(self):
         self.cap.release()

@@ -7,6 +7,45 @@ from HistoryWindow import AnotherWindow
 from PyQt5 import QtWidgets
 import sys
 
+dist = {
+    "video1": {
+        "path": "C:/Users/Pc/PycharmProjects/CarDashboard/DataSet/video 1",
+        "number": "111",
+        "categories": ["DOOR OPEN", "BREAK IN"],
+        "User Name": "Mahd",
+        "User ID": "a12"
+    },
+    "video2": {
+        "path": "C:/Users/Pc/PycharmProjects/CarDashboard/DataSet/video 1",
+        "number": "222",
+        "categories": ["DOOR OPEN", "POTENTIAL", "MANUAL"],
+        "User Name": "Arpan",
+        "User ID": "c16"
+    },
+    "video3": {
+        "path": "C:/Users/Pc/PycharmProjects/CarDashboard/DataSet/video 1",
+        "number": "333",
+        "categories": ["MANUAL"],
+        "User Name": "",
+        "User ID": ""
+    },
+    "video4": {
+        "path": "C:/Users/Pc/PycharmProjects/CarDashboard/DataSet/video 1",
+        "number": "444",
+        "categories": ["POTENTIAL"],
+        "User Name": "",
+        "User ID": ""
+    },
+    "video5": {
+        "path": "C:/Users/Pc/PycharmProjects/CarDashboard/DataSet/video 1",
+        "number": "555",
+        "categories": ["BREAK IN", "MANUAL"],
+        "User Name": "",
+        "User ID": ""
+    },
+}
+
+
 class MyTableWidget(QWidget):
 
     def __init__(self,widget, m1, m2, m3, userData):
@@ -60,15 +99,7 @@ class MyTableWidget(QWidget):
             self.setLayout(self.layout)
 
     def showHistoryWindow(self):
-        widget = QtWidgets.QStackedWidget()
-        w = AnotherWindow()
-        widget.addWidget(w)
-
-        widget.setFixedHeight(700)
-        widget.setFixedWidth(1200)
-        self.setModal(True)
-        widget.show()
-
+        AnotherWindow(dist)
 
     @pyqtSlot()
     def on_click(self):
