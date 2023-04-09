@@ -34,26 +34,16 @@ class MyFrame(ct.CTkScrollableFrame):
             f.grid(row=i, column=0, padx=0)
             self.scrols.append(f)
 
-    def query(self, cat, plate,name, id):
-        print(cat, name, plate, id)
+    def query(self, cat):
         self.placeFrames()
 
         for i in range(len(self.scrols)):
             if cat != "Select Category" and cat != "All" and cat not in self.data[self.scrols[i].getX()]["categories"]:
                 self.scrols[i].grid_remove()
 
-            if plate != "" and plate != self.data[self.scrols[i].getX()]["number"]:
-                self.scrols[i].grid_remove()
-
-            if name != "" and name != self.data[self.scrols[i].getX()]["User Name"]:
-                self.scrols[i].grid_remove()
-
-            if id != "" and id != self.data[self.scrols[i].getX()]["User ID"]:
-                self.scrols[i].grid_remove()
-
 
 class AnotherWindow:
-    def __init__(self, dictionary):
+    def __init__(self, path):
         ct.set_appearance_mode("System")
         ct.set_default_color_theme("blue")
 
@@ -61,9 +51,11 @@ class AnotherWindow:
         master.title("Data History")
         master.geometry("900x400")
 
-        self.data = dictionary
+        self.data = path
+        self.CreateDictionary()
 
-        self.my_frame = MyFrame(master, dictionary)
+        self.my_frame = MyFrame(master, self.dict)
+
         self.var = StringVar()
         self.var.set("")
 
@@ -71,39 +63,24 @@ class AnotherWindow:
                                          font=("Ariel", 12), fg_color="grey", variable=self.var)
         self.combobox.set("Select Category")
 
-        self.entry1 = ct.CTkEntry(master=master,
-                                  placeholder_text="Plate Number",
-                                  width=120,
-                                  height=25,
-                                  border_width=2,
-                                  corner_radius=10)
-
-        self.entry2 = ct.CTkEntry(master=master,
-                                  placeholder_text="Person ID",
-                                  width=120,
-                                  height=25,
-                                  border_width=2,
-                                  corner_radius=10)
-
-        self.entry3 = ct.CTkEntry(master=master,
-                                  placeholder_text="Person Name",
-                                  width=120,
-                                  height=25,
-                                  border_width=2,
-                                  corner_radius=10)
 
         self.button = ct.CTkButton(master, text="F I N D", font=("Ariel", 12), command=self.button_function)
 
         self.my_frame.place(relx=0.01, rely=0.15, relwidth=1 - 2 * 0.01, relheight=1 - 0.18)
         self.combobox.place(relx=0.05, rely=0.03, relwidth=0.15, relheight=0.075)
-        self.entry1.place(relx=0.23, rely=0.03, relwidth=0.15, relheight=0.075)
-        self.entry2.place(relx=0.41, rely=0.03, relwidth=0.15, relheight=0.075)
-        self.entry3.place(relx=0.59, rely=0.03, relwidth=0.15, relheight=0.075)
         self.button.place(relx=1 - 0.15 - 0.05, rely=0.03, relwidth=0.15, relheight=0.075)
 
         master.mainloop()
 
-    def button_function(self):
-        self.my_frame.query(self.var.get(), self.entry1.get(), self.entry3.get(), self.entry2.get())
+    def CreateDictionary(self):
+        self.dict = {}
+        for i in (os.listdir(self.data)):
+            for j in (os.listdir(self.data+"/"+i)):
+                self.dict[i] = {
+                    "categories":str(j.split('.')[0]).split("_"),
+                    "path":str(os.getcwd().replace("\\","/")+"/"+self.data+i+"/")
+                                }
 
+    def button_function(self):
+        self.my_frame.query(self.var.get())
 
