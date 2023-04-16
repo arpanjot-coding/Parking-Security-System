@@ -9,7 +9,7 @@ model1_data = df['model1'].apply(eval)
 coco_data = df['coco'].apply(eval)
 
 # Loop over each class
-for class_name in ['Car door close', 'Car door open', 'parking', 'number plate']:
+for class_name in ['Tools']:
 
     # Create an empty dictionary to hold the counts for the class
     counts = {

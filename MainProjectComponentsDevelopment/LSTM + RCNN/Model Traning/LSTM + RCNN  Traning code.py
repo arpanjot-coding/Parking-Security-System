@@ -154,7 +154,6 @@ model = create_model()
 
 # Compile the model with appropriate loss function, optimizer, and evaluation metric
 model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
-
 # Display the model summary
 model.summary()
 
@@ -162,7 +161,8 @@ model.summary()
 early_stopping_callback = EarlyStopping(monitor='val_loss', patience=10)
 
 # Train the model on the dataset
-history = model.fit(features_train, labels_train, batch_size=32, epochs=50, validation_split=0.2, callbacks=[early_stopping_callback])
+history = model.fit(features_train, labels_train, batch_size=32, epochs=50, validation_split=0.2,
+                    callbacks=[early_stopping_callback])
 
 # Evaluate the model on the test dataset
 evaluation = model.evaluate(features_test, labels_test, batch_size=32)

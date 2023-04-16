@@ -1,16 +1,24 @@
-# IMPORTS
 from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import *
-import torch
 import sys
+from LoginPage import WelcomeScreen
 import firebase_admin
 from firebase_admin import db,auth,credentials
-from dashboard import MyTableWidget
+import torch
 
 # LOADING MODELS
-model1 = torch.hub.load('ultralytics/yolov5', 'custom', path='MODELS/D1-V1/train/exp/weights/best.pt', force_reload=True)
-model2 = torch.hub.load('ultralytics/yolov5', 'custom', path='MODELS/D2-V1/train/exp/weights/best.pt', force_reload=True)
-model3 = torch.hub.load('ultralytics/yolov5', 'custom', path='MODELS/Tool-V1/train/exp/weights/best.pt', force_reload=True)
+# Load the three models
+model1 = torch.hub.load('C:/Users/sarpa/OneDrive/Desktop/yolov5', 'custom',
+                                path='C:/Users/sarpa/OneDrive/Desktop/Project/TestingResources/Models/D1/best.pt',
+                                source='local')
+model2 = torch.hub.load('C:/Users/sarpa/OneDrive/Desktop/yolov5', 'custom',
+                                path='C:/Users/sarpa/OneDrive/Desktop/Project/TestingResources/Models/D2/best.pt',
+                                source='local')
+
+model3 = torch.hub.load('C:/Users/sarpa/OneDrive/Desktop/yolov5', 'custom',
+                                path='C:/Users/sarpa/OneDrive/Desktop/Project/TestingResources/Models/Tools/best.pt',
+                                source='local')
+
 
 # CONNECTING TO THE FIREBASE
 cred = credentials.Certificate("accountKey.json")
@@ -19,7 +27,7 @@ firebase_admin.initialize_app(cred, {
     'storageBucket': 'parkingsystemdatabasefyp.appspot.com'
 })
 
-# RETRIEVEING AND STORING ALL USER ID'S IN DICTIONARY
+# RETRIEVING AND STORING ALL USER ID'S IN DICTIONARY
 page = auth.list_users()
 UserData = {}
 
@@ -38,16 +46,23 @@ while page:
         break
     page = auth.list_users(page.next_page_token)
 
+def goto_create():
+    create = CreateAccScreen(back_to_login, widget, model1, model2, model3, UserData)
+    widget.addWidget(create)
+    widget.setCurrentIndex(widget.currentIndex() + 1)
 
-# STARTING APPLICATION
+
+def back_to_login():
+    login_page = WelcomeScreen(goto_create, widget, model1, model2, model3, UserData)
+    widget.addWidget(login_page)
+    widget.setCurrentIndex(widget.currentIndex() + 1)
 
 app = QApplication(sys.argv)
 widget = QtWidgets.QStackedWidget()
-welcome = MyTableWidget(widget,model1, model2, model3, UserData)
-widget.addWidget(welcome)
-
-widget.setFixedHeight(700)
-widget.setFixedWidth(1200)
+login_page = WelcomeScreen(goto_create, widget,model1, model2, model3, UserData)
+widget.addWidget(login_page)
+widget.setFixedHeight(1400)
+widget.setFixedWidth(2400)
 widget.show()
 
 try:

@@ -17,10 +17,7 @@ with mp_pose.Pose(min_detection_confidence=0.1, min_tracking_confidence=0.1) as 
         success, image = cap.read()
         if not success:
             break
-
         frame_num += 1  # Increment frame counter
-
-
 
         # Convert the image to RGB
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)

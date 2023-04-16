@@ -22,7 +22,7 @@ class Snake(QWidget):
         self.highscore = 0
         self.newGame()
         self.setStyleSheet("QWidget { background: #A9F5D0 }")
-        self.setFixedSize(800, 800)
+        self.setFixedSize(550, 400)
         self.setWindowTitle('Snake')
         self.show()
 

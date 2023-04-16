@@ -8,14 +8,14 @@ import matplotlib.pyplot as plt
 
 # Load the three models
 model1 = torch.hub.load('C:/Users/sarpa/OneDrive/Desktop/yolov5', 'custom',
-                        path='Models/D1/best.pt',
+                        path='C:/Users/sarpa/OneDrive/Desktop/Project/TestingResources/Models/Tools/best.pt',
                         source='local')
 
 # Set the path to the folder containing the images
-img_folder = 'C:/Users/sarpa/Downloads/D1/images/'
+img_folder = 'C:/Users/sarpa/Downloads/Tools/images/'
 
 # Set the path to the COCO labels file
-labels_file = 'C:/Users/sarpa/Downloads/D1/annotations/instances_default.json'
+labels_file = 'C:/Users/sarpa/Downloads/Tools/annotations/instances_default.json'
 
 # Load the COCO labels
 with open(labels_file, 'r') as f:
@@ -52,12 +52,9 @@ for filename in os.listdir(img_folder):
             category_id = int(bbox[5])
             if category_id in id2name:
                 label = id2name[category_id]
-                if label == 'Car door close':
-                    model1_label_counts['Car door open'] += 1
-                elif label == 'Car door open':
-                    model1_label_counts['Car door close'] += 1
-                else:
+                if label in model1_label_counts:
                     model1_label_counts[label] += 1
+
 
         # Update COCO label counts and store predictions
         coco_predictions = {}
