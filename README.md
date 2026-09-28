@@ -22,26 +22,25 @@ Four designs were built. A pose model, an action classifier, and one detector wi
 
 ## What the finished system looks like
 
-The window below is the security dashboard on a staged break-in. The video sits on the left. Three models have already drawn on it, and the banner at the top is the decision.
+The two frames below are the system that shipped. On the left, all three detectors are drawn together on the dashboard. On the right, D1 is on its own, on a car whose door is shut.
 
-<img src="docs/images/report/dashboard-alert.jpg" alt="Security dashboard. The frame shows a closed car door, a number plate, parking bays, a person, and a tool. The banner reads POTENTIAL ROBBERY because the tool box meets the person." width="900">
+| Dashboard, three models together | D1 alone, door shut |
+| --- | --- |
+| <img src="docs/images/report/dashboard-alert.jpg" alt="Dashboard with a potential robbery alert" width="100%"> | <img src="docs/images/report/d1-result.jpg" alt="D1 on a closed car" width="100%"> |
+| Door close 0.96, plate 0.91, person 0.87, tool 0.68. The tool meets the person, so the banner is **POTENTIAL ROBBERY**. The orange block and green mark are the top-down view. | Door close 0.87 follows the car, the plate box sits on the bumper at 0.96, and the parking boxes follow the painted bays. |
 
-D1, the vehicle model, has drawn `Car door close` at 0.96 around the body of the car, `number plate` at 0.91 on the bumper, and `parking` at 0.96 and 0.95 along the painted bays. D2, the people model, has drawn `Person` at 0.87. The tools model has drawn `Tools` at 0.68 on the jack in the person's hands. The door is shut, so there is no door-open alarm. The tool rectangle meets the person rectangle, so the banner reads **POTENTIAL ROBBERY** and the dashboard has started sending that alert to the client who booked the car. On the grey panel to the right, the same scene is reduced to a top-down plan: an orange block for the car and a green mark for the person. That plan is a homography, a geometry step, not a fourth learned model. Each camera tab runs on its own thread, and a two-second clip is stored when an alert fires.
+On the left, D1 has drawn the closed door, the plate, and the bays. D2 has drawn the person. The tools model has drawn the jack in their hands. The door is shut, so there is no door-open alarm. The tool rectangle meets the person rectangle, so the dashboard starts sending the alert to the client who booked the car. The grey panel is a homography, a geometry step rather than a fourth learned model. Each camera tab runs on its own thread, and a two-second clip is stored when an alert fires.
 
-The next frame is D1 on its own, on a car whose door is shut. This is the picture the relabelled training set was aiming at.
-
-<img src="docs/images/report/d1-result.jpg" alt="D1 detection on a closed car: car door close 0.87, number plate 0.96, parking bays 0.96." width="900">
-
-`Car door close` at 0.87 follows the body of the car rather than a loose box of grass and tarmac. `number plate` at 0.96 sits on the plate itself. The two `parking` boxes at 0.96 follow the painted lines of the bays. The plate crop from this box is what EasyOCR reads, so the alert can be matched to a booking. EasyOCR was not trained for this project. It is only the reader for a region D1 has already found.
+On the right, the same vehicle model is the picture the relabelled training set was aiming at. The plate crop from that box is what EasyOCR reads, so the alert can be matched to a booking. EasyOCR was not trained for this project. It only reads a region D1 has already found.
 
 ## The camera these weights actually saw
 
 Every result below depends on one lens. It is mounted about 2.5 m above a single bay and looks along the bay, so the training car is seen from the front and a person at the bumper is seen from head to feet.
 
-<p>
-<img src="docs/images/report/camera-height.jpg" alt="Camera mounted about 2.5 metres above a parking bay." width="32%">
-<img src="docs/images/report/camera-coverage.jpg" alt="Multi-storey aisle with the camera coverage drawn in red." width="66%">
-</p>
+| Mounting height | The aisle one camera would have to cover |
+| --- | --- |
+| <img src="docs/images/report/camera-height.jpg" alt="Camera mounted about 2.5 metres above a parking bay" width="100%"> | <img src="docs/images/report/camera-coverage.jpg" alt="Multi-storey aisle with the camera coverage drawn in red" width="100%"> |
+| About 2.5 m. A person can reach the housing with an outstretched arm. Cars to either side are seen from the rear, not from the front. | The red wedge is the coverage. Cars at the bright end of the aisle are too small for a plate or a jack. |
 
 The left photograph is the mounting. The housing is marked in red, and the height is written on the frame as 2.5 m. A standing person can reach it with an outstretched arm, so the view is above head height but not a top-down view into the bay. Cars to either side are seen from the rear quarter, which is a different shape from the front-on car the detectors were trained on.
 
@@ -49,50 +48,65 @@ The right photograph is a real multi-storey aisle, with the wedge one camera wou
 
 The footage the weights learned from is the front-on view, filmed for the project with participants acting ordinary visits and staged break-ins. It was reduced from 60 frames a second to one still every two seconds, outlined by hand in CVAT, and converted to YOLOv5 labels through Roboflow.
 
-## Why the earlier models were dropped
+## The three approaches that were dropped, side by side
 
-### A pose cannot see a jack, and it invents a person
+These ran before the three-model design. Each one tried to say "theft" in a single output, and each one failed in a different way. The pose model is on the left, the LSTM action classifier is in the middle, and the single seven-class detector is on the right.
 
-The first model was MediaPipe Pose. OpenCV reads the frame, the colours are swapped into the order MediaPipe expects, and the model returns the joints of one body. Nothing is trained on the parking footage. The hope was that a bent arm or a torso over the window would be enough to call a theft.
+| Pose (MediaPipe) | LSTM action classifier | One YOLOv5, seven classes |
+| --- | --- | --- |
+| <img src="docs/images/report/skeleton-empty-bay.jpg" alt="Skeleton drawn on an empty car" width="100%"> | <img src="docs/images/report/action-timeline.jpg" alt="LSTM true labels against predicted labels" width="100%"> | <img src="docs/images/report/false-door-open.jpg" alt="Closed side door called open" width="100%"> |
+| Nobody is in the bay. A body is still drawn across the bonnet. A jack is not a landmark, so the tool is invisible. | Blue is the real break-in. Orange is the prediction: short spikes, about two seconds away from the event. Validation accuracy was still 0.998. | A shut door on the left is called Door Open at 0.83. People breaking in were called Person. The robber class agreed 44% of the time. |
 
-<img src="docs/images/report/skeleton-fitted.jpg" alt="Pose landmarks on a person bent over the driver's door. The jack on the ground has no landmarks." width="900">
+### Pose, fitted against an empty bay
 
-On a clear frame the pose does find the person. Here they are bent over the driver's side in dark clothing. Landmarks sit on the shoulder and the arm, then the lower body collapses into one line down the leg. The red jack on the tarmac, which is the actual tool, has no representation. A rule written on these points would see a bent figure. It would not see the tool, and the leg it read would be in the wrong place.
+MediaPipe Pose returns the joints of one body. Nothing was trained on the parking footage. The hope was that a bent arm would be enough to call a theft.
 
-<img src="docs/images/report/skeleton-empty-bay.jpg" alt="MediaPipe draws a skeleton across the bonnet of a car when nobody is in the frame." width="900">
+| Person at the door | Empty bay |
+| --- | --- |
+| <img src="docs/images/report/skeleton-fitted.jpg" alt="Pose on a person, jack on the ground has no landmarks" width="100%"> | <img src="docs/images/report/skeleton-empty-bay.jpg" alt="Pose invented on the bonnet" width="100%"> |
+| The person is found, then the leg collapses into one line. The red jack on the tarmac has no joints, so the actual tool is missing. | The same model invents a shoulder on the windscreen and a leg toward the plate. An alert of "a person is here" would fire on an empty space. |
 
-The failure that removes it from a security system is the empty bay. Nobody is in this frame. MediaPipe still returns a body, drawn across the bonnet: a shoulder on the windscreen, a hip near the headlight, a leg running toward the plate. An alert of the form "a person is at the car" would fire on an empty space. Light, greyscale, and lighter clothing were all tried. None of them stopped the model drawing a person who was not there, and none of those controls exist in a real car park. The scripts remain in `MainProjectComponentsDevelopment/Skeleton Extraction`. The dashboard does not load them.
+Light, greyscale, and lighter clothing were tried. None of them stopped the empty-bay skeleton, and a pose still has no class for a door, a plate, or a jack. The scripts stay in `MainProjectComponentsDevelopment/Skeleton Extraction`. The dashboard does not load them.
 
-### A high accuracy did not mean the model knew when the break-in happened
+### LSTM, the training score next to the test
 
-The second model classified one-second clips as normal or abnormal. The folder is named `LSTM + RCNN`. The network that was actually trained is a 3D convolutional classifier on the difference between consecutive frames, resized to 64 by 113 pixels. There is no recurrent layer in the training script. Validation accuracy sat between about 0.98 and 1.00, and the saved file records accuracy 0.998279. On the clips it was shown, the two folders were easy to separate.
+The folder is named `LSTM + RCNN`. The network that was trained is a 3D convolutional classifier on the difference between consecutive frames, resized to 64 by 113. Clips were cut to one second and labelled normal or abnormal. That edit took about four days. There is no recurrent layer in the training script.
 
-<img src="docs/images/report/action-timeline.jpg" alt="True abnormal periods are long blocks. Predicted abnormal labels are short spikes shifted away from them." width="900">
+| Training, which looks solved | One-minute test, which is not |
+| --- | --- |
+| <img src="docs/images/report/action-training.jpg" alt="LSTM training loss falling and accuracy near 1.0" width="100%"> | <img src="docs/images/report/action-timeline.jpg" alt="Predicted abnormal spikes miss the true events" width="100%"> |
+| Loss falls and accuracy sits between about 0.98 and 1.00. The saved file records accuracy 0.998279. | Three real abnormal stretches last many seconds. The orange predictions are spikes about 2.3 seconds long and about 2 seconds late. |
 
-A one-minute test, scored once per second, is the picture above. The blue line is the true label. Three abnormal stretches each last many seconds. The orange line is the prediction. It stays on normal through most of those stretches and marks abnormal as a narrow spike, about 2.3 seconds long and about 2 seconds away from the true event. The model noticed that something in the minute was wrong. It did not say when.
+The reason the two pictures disagree is the difference image. Handheld training footage moves the whole background. Tripod test footage leaves the person.
 
-The cause is the difference image. Training footage was shot by hand, so a small camera movement changes every pixel and the difference is full of trees and bay lines. The test footage was shot on a tripod, so the difference is mostly the person. The two inputs do not look alike, which is why the validation score did not survive the test. Cutting the clips had already taken about four days, which was more work than drawing boxes on stills. The weights remain under `MainProjectComponentsDevelopment/LSTM + RCNN`.
+| Handheld training pair | Tripod test pair |
+| --- | --- |
+| <img src="docs/images/report/difference-handheld.jpg" alt="Handheld frame difference full of trees and the car outline" width="100%"> | <img src="docs/images/report/difference-tripod.jpg" alt="Tripod frame difference leaving the person and the jack" width="100%"> |
+| A small camera shake turns trees, the kerb, and the whole car into the input. The person is a small part of that noise. | The background goes dark and the person with the jack remains. The test images are not the images the model trained on. |
 
-### One detector could not tell a robber from a person
+The weights remain under `MainProjectComponentsDevelopment/LSTM + RCNN`.
 
-YOLOv5 was then trained once, on about 900 images, with seven classes: car, person, staff vest, door open, robber, mask, and parking space. A label counter agreed with the hand-drawn boxes 95% of the time for masks and open doors, and only 44% of the time for robbers. The Ultralytics results file for that run was not saved, so there is no official mAP. The frames were enough to stop.
+### One detector, a break-in frame next to a false door
 
-<img src="docs/images/report/false-door-open.jpg" alt="A closed side door is labelled Door Open at 0.83 while the main car is correctly labelled Car at 0.93." width="900">
+About 900 images, seven classes: car, person, staff vest, door open, robber, mask, and parking space. The results file was not saved. The frames were enough to stop.
 
-The main car is closed and correctly called `Car` at 0.93. The car on the left is also closed. A sliver of its door, seen edge-on, is called `Door Open` at 0.83. The arrow in the figure marks that box. Parking boxes cover empty tarmac and the neighbouring cars. If the rule is "any open door is an alarm", this frame alarms on a car nobody is touching. On a real break-in frame the same model called the people `Person` and drew no robber box at all. A person forcing a door and a person unlocking their own car were both labelled as ordinary rectangles, and at this distance their clothes do not differ. Vest boxes had been drawn around the whole body, and door boxes included the glass, so the network was taught the person and the hedge as part of the object.
+| Staged break-in | Neighbouring car |
+| --- | --- |
+| <img src="docs/images/report/single-model-test.jpg" alt="People called Person and tarmac called parking space" width="100%"> | <img src="docs/images/report/false-door-open.jpg" alt="Closed side door called Door Open at 0.83" width="100%"> |
+| The people at the car are `Person` at 0.68. No robber box is drawn. Patches of tarmac are called Parking Space. | The main car is correctly `Car` at 0.93. A shut door on the left is `Door Open` at 0.83. |
 
-## The labels that the shipped models were trained on
+A robber and a person had both been drawn as ordinary rectangles, and at this distance their clothes do not differ. Vest boxes included the whole body, and door boxes included the glass, so the network learned the person and the hedge as part of the object. Masks were dropped as well: at 2.5 m a mask is a few pixels, and a requirement to wear one would have alarmed on every visitor.
 
-The repair was to split the classes across three models, and to redraw every outline so the box contained the object.
+## The labels, old rectangles beside the outlines that were kept
 
-<p>
-<img src="docs/images/report/old-rectangles.jpg" alt="Old labels: loose rectangles around the door glass, the car, and a patch of tarmac." width="48%">
-<img src="docs/images/report/new-polygons.jpg" alt="New labels: polygons following the car, the open door, the number plate, and the bay lines." width="48%">
-</p>
+The classes were split across three models, and every outline was redrawn so the box contained the object.
 
-On the left, the old style. The car rectangle takes in a wide margin of the scene. The door rectangle includes the glass and the mirror, so the person and the glare behind the window become part of "door". A parking shape runs off across the tarmac. Small boxes near the mirror try to catch a vest and mostly catch the window.
+| Old rectangles | Polygons the three models trained on |
+| --- | --- |
+| <img src="docs/images/report/old-rectangles.jpg" alt="Loose rectangles around door glass and tarmac" width="100%"> | <img src="docs/images/report/new-polygons.jpg" alt="Polygons following the car, open door, plate, and bay" width="100%"> |
+| The door box takes in the glass and the mirror. The parking shape runs off across the tarmac. The network is taught the background. | The outline follows the metal and the open door, stops at the panel, and gives the plate and the bay their own shapes. The glass is left out. |
 
-On the right, the style that was kept. A polygon follows the metal of the car and the open door and stops at the panel. A separate polygon sits on the plate. The bay is drawn along the painted lines. The glass is left outside, which is why D1 can tell a door from the person standing behind it. The same footage was outlined three times, once for each model. A door that was only slightly ajar was relabelled as closed, because the visible panel had barely changed and the model had been swapping those two states.
+The same footage was outlined three times, once for each model. A door that was only slightly ajar was relabelled as closed, because the visible panel had barely changed and the model had been swapping those two states.
 
 ## The three models, and what the scores mean
 
@@ -112,16 +126,15 @@ All three are YOLOv5m, started from the official pretrained medium weights. YOLO
 
 mAP at an overlap of 0.50 means the predicted box covers at least half of the hand-drawn box and the class is right, averaged over the classes. The confidence next to an F1 is the threshold where that F1 was best. It is not a second copy of the score.
 
-<p>
-<img src="docs/images/report/d1-precision-recall.jpg" alt="D1 precision-recall curve. All-class mAP at 0.5 is 0.985." width="48%">
-<img src="docs/images/report/d2-confusion.jpg" alt="D2 confusion matrix. Person and Security are both recalled at 0.96." width="48%">
-</p>
+| D1, vehicle | D2, people |
+| --- | --- |
+| <img src="docs/images/report/d1-precision-recall.jpg" alt="D1 precision-recall curve, mAP 0.985" width="100%"> | <img src="docs/images/report/d2-confusion.jpg" alt="D2 confusion matrix, person and security at 0.96" width="100%"> |
+| Precision stays high until recall is high. Closed door 0.994, open door 0.968, plate 0.988, parking 0.992. All-class mAP 0.985. | Person and security are both recalled at 0.96. Four percent of staff are called a person. Two percent of people are called staff. |
 
-The left plot is D1. Precision stays near the top of the graph until recall is high, then drops. Closed door is the strongest class, with average precision 0.994. Open door is the weakest of the four, at 0.968. On the confusion matrix, 2% of closed doors are called open, which is the remnant of the old glass-and-door confusion, and the 0.70 confidence gate sits on top of it. Plate average precision is 0.988 and parking is 0.992. The all-class figure is 0.985.
-
-The right plot is D2. Rows are the prediction and columns are the true class. Person and security are both recalled at 0.96. Four percent of staff are called a person, and two percent of people are called staff. Those are the mistakes an operator would see: a missed vest, or a bright jacket read as one. They are small beside the 44% robber failure of the single model. Person average precision is 0.995 and security is 0.992.
-
-<img src="docs/images/report/tools-f1.jpg" alt="Tools model F1 curve, peaking near 0.95 and falling as confidence gets strict." width="700">
+| D1 confusion matrix | Tools F1 curve |
+| --- | --- |
+| <img src="docs/images/report/d1-confusion.jpg" alt="D1 confusion matrix" width="100%"> | <img src="docs/images/report/tools-f1.jpg" alt="Tools F1 curve peaking near 0.95" width="100%"> |
+| Closed door is recalled at 0.97, with 0.02 of those cases called open. Open door, plate, and parking sit on the diagonal. | The jack score peaks near 0.95 and then falls once the confidence threshold gets strict, because the tool is small. |
 
 The tools curve climbs to about 0.95 around the middle of the confidence axis and has collapsed by the time confidence reaches 0.95. The legend reads a best F1 of 0.95 at confidence 0.631. The jack is a small object. As the person steps away it becomes a few pixels, and while it is swung inside the car the box disappears. When the jack is visible the box is usually in the right place, which is why the mAP is still 0.984. A strict threshold throws the small object away, which is why the right-hand side of this curve falls to zero. On a 102-frame robber clip the tool was tracked on 90.78% of frames. The dissertation evaluates a 70-epoch run. The zip stored next to the checkpoint is named for 30 epochs. The file to load is `best.pt` in `All YOLOv5 Models/TOOLS`.
 
