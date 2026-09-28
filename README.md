@@ -2,7 +2,11 @@
 
 A parking-lot security system that watches a camera feed for behaviour around parked cars and raises an alert when a person, an open door, and a tool line up in a way that looks like a break-in.
 
-This is the code and trained weights from Arpanjot Singh's BSc Computer Science dissertation at the University of Reading (supervisor James Ferryman, May 2023). The full model catalogue, with training settings, class lists, metrics, and the result figures from the dissertation, is in [docs/MODELS.md](docs/MODELS.md).
+This is the code and trained weights from Arpanjot Singh's BSc Computer Science dissertation at the University of Reading (supervisor James Ferryman, May 2023).
+
+The write-up of why the project kept three YOLOv5 detectors, and why the skeleton, the action classifier, and the single seven-class detector were dropped, is the [model selection report](docs/model-selection-report.md). It includes the dissertation figures: the camera setup, the failed poses, the action-model timeline, the labelling changes, and the metrics for the models that shipped.
+
+The class-by-class catalogue of the same weights is in [docs/MODELS.md](docs/MODELS.md).
 
 ## What it detects
 

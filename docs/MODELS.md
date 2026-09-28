@@ -1,5 +1,7 @@
 # Models
 
+The narrative of why these models were kept or dropped, with the dissertation figures, is in the [model selection report](model-selection-report.md).
+
 This catalogue describes every model in the Parking Security System: what it is, the style of detector or classifier, the classes it knows, how it was trained, where the weights live, and how it behaved on the held-out footage.
 
 The system that ships is three YOLOv5m detectors. Two earlier ideas, a MediaPipe skeleton and a video action classifier, were trained and then dropped because they did not hold up on this footage. EasyOCR is used as a plate reader. It was not trained for this project.
