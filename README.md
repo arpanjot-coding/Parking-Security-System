@@ -2,11 +2,78 @@
 
 A parking-lot security system that watches a camera feed for behaviour around parked cars and raises an alert when a person, an open door, and a tool line up in a way that looks like a break-in.
 
-This is the code and trained weights from Arpanjot Singh's BSc Computer Science dissertation at the University of Reading (supervisor James Ferryman, May 2023).
+This is the code and trained weights from Arpanjot Singh's BSc Computer Science dissertation at the University of Reading (supervisor James Ferryman, May 2023). The photographs and plots below are taken from that dissertation. The full written analysis is in the [model selection report](docs/model-selection-report.md). Class lists and weight paths are in [docs/MODELS.md](docs/MODELS.md).
 
-The full description of the models, what each figure shows, and why the skeleton, the action classifier, and the single seven-class detector were dropped, is the [model selection report](docs/model-selection-report.md).
+## What the finished system looks like
 
-The class-by-class catalogue of the same weights is in [docs/MODELS.md](docs/MODELS.md).
+Three YOLOv5m detectors run on the same frame. D1 draws the door, the plate, and the bays. D2 draws the person. The tools model draws the jack. The banner is raised only when those boxes meet.
+
+<img src="docs/images/report/dashboard-alert.jpg" alt="Security dashboard. The frame shows a closed car door, a number plate, parking bays, a person, and a tool. The banner reads POTENTIAL ROBBERY because the tool box meets the person." width="900">
+
+*Dashboard on a staged break-in. Door close 0.96, plate 0.91, person 0.87, tool 0.68. The tool overlaps the person, so the alert is POTENTIAL ROBBERY. The orange block and green mark on the right are the top-down view of the car and the person.*
+
+<img src="docs/images/report/d1-result.jpg" alt="D1 detection on a closed car: car door close 0.87, number plate 0.96, parking bays 0.96." width="900">
+
+*D1 on its own, after the labels were redrawn as polygons. The closed-door box follows the car, the plate box sits on the bumper, and the parking boxes follow the painted bays.*
+
+## The camera the models were trained for
+
+The lens is about 2.5 m above one bay and looks at the car from the front. A car further down an aisle, or seen from the side, is outside what these weights were measured on.
+
+<p>
+<img src="docs/images/report/camera-height.jpg" alt="Camera mounted about 2.5 metres above a parking bay." width="32%">
+<img src="docs/images/report/camera-coverage.jpg" alt="Multi-storey aisle with the camera coverage drawn in red." width="66%">
+</p>
+
+*Left: mounting height, about 2.5 m. Right: the wedge of an aisle one camera would have to cover. Cars at the far end are too small for a jack or a plate.*
+
+## Why the earlier models were dropped
+
+**Pose.** MediaPipe draws a body even when the bay is empty, and it cannot see a jack.
+
+<img src="docs/images/report/skeleton-empty-bay.jpg" alt="MediaPipe draws a skeleton across the bonnet of a car when nobody is in the frame." width="900">
+
+*Empty bay. The pose is drawn on the bonnet and the headlights.*
+
+**Action classifier.** Validation accuracy sat near 0.998, but on a one-minute video the predicted abnormal events are short spikes in the wrong place. The blue line is the true label. The orange line is the prediction.
+
+<img src="docs/images/report/action-timeline.jpg" alt="True abnormal periods are long blocks. Predicted abnormal labels are short spikes shifted away from them." width="900">
+
+*Sixty one-second clips. Real break-ins last many seconds. The model marks a few one-second spikes.*
+
+**One detector for every class.** A closed door on the neighbouring car is called open, and people breaking in are called Person rather than Robber.
+
+<img src="docs/images/report/false-door-open.jpg" alt="A closed side door is labelled Door Open at 0.83 while the main car is correctly labelled Car at 0.93." width="900">
+
+*The seven-class model. Door Open 0.83 on a shut door at the left edge. Parking boxes cover empty tarmac.*
+
+## The labels that fixed it
+
+The shipped models were trained on polygons that follow the metal of the car and the open door, and leave the glass out.
+
+<p>
+<img src="docs/images/report/old-rectangles.jpg" alt="Old labels: loose rectangles around the door glass, the car, and a patch of tarmac." width="48%">
+<img src="docs/images/report/new-polygons.jpg" alt="New labels: polygons following the car, the open door, the number plate, and the bay lines." width="48%">
+</p>
+
+*Left: the old rectangles, which include glass and tarmac. Right: the outlines the three models were trained on.*
+
+## Scores for the three models that shipped
+
+| Detector | Classes | Result |
+| --- | --- | --- |
+| D1, vehicle | Car door open, car door close, number plate, parking | mAP at IoU 0.50 is 0.985. F1 0.98 at confidence 0.603. |
+| D2, people | Person, Security (the vest) | mAP at IoU 0.50 is 0.994. F1 0.99 at confidence 0.653. |
+| Tools | Tools (a car jack) | mAP at IoU 0.50 is 0.984. Best F1 0.95 at confidence 0.631. The jack is small, so this is the weak model. |
+
+<p>
+<img src="docs/images/report/d1-precision-recall.jpg" alt="D1 precision-recall curve. All-class mAP at 0.5 is 0.985." width="48%">
+<img src="docs/images/report/d2-confusion.jpg" alt="D2 confusion matrix. Person and Security are both recalled at 0.96." width="48%">
+</p>
+
+<img src="docs/images/report/tools-f1.jpg" alt="Tools model F1 curve, peaking near 0.95 and falling as confidence gets strict." width="700">
+
+*D1 precision-recall, D2 confusion matrix, and the tools F1 curve. The tools score falls once the confidence threshold gets strict.*
 
 ## What it detects
 
@@ -44,7 +111,8 @@ The plate crop from D1 is passed to EasyOCR so the dashboard can attach a regist
 | `ProjectProcessingPrograms` | Frame reduction and CVAT polyline conversion. |
 | `SecurityDash` | PyQt5 security dashboard. |
 | `TestingResources` | Sample frames used while wiring the detectors. |
-| `docs/MODELS.md` | Model catalogue. |
+| `docs/model-selection-report.md` | Full model report, with every figure described. |
+| `docs/MODELS.md` | Class lists, thresholds, and weight paths. |
 
 The deployment scripts still point at absolute paths on the original development machine (`Models/D1/best.pt`, `Models/D2/best.pt`, `Models/Tools/best.pt`). Point those paths at the three `best.pt` files under `All YOLOv5 Models` before running them.
 
@@ -65,7 +133,7 @@ The footage was filmed for this project, reduced from 60 fps to a still every tw
 
 Singh, A. (2023). *Parking Security System For Detecting Abnormal Behaviour*. BSc dissertation, Department of Computer Science, University of Reading. Supervisor: James Ferryman.
 
-Figures in [docs/MODELS.md](docs/MODELS.md) are taken from that dissertation. The source PDF is compressed, so the plots are at the resolution of that file.
+The figures on this page and in the [model selection report](docs/model-selection-report.md) are taken from that dissertation.
 
 ## Credentials
 
